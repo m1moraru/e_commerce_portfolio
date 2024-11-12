@@ -2,7 +2,9 @@ const express = require('express');
 const db = require('./config/db'); // Import the db connection
 const cors = require('cors');
 const session = require('express-session');
-const passport = require('./config/passportConfig'); // Import configured passport
+const passport = require('./config/passportConfig');
+//require('./config/passportConfig'); // Ensure this only configures passport without exporting
+
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
@@ -17,14 +19,23 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json()); 
 
 // Use CORS middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3001', // Replace with your frontend URL
+    credentials: true
+}));
+
 
 // Configure session middleware
 app.use(
     session({
-        secret: 'yourSecretKey', // Use a strong secret in production
+        secret: process.env.SESSION_SECRET, // Use the secret from the environment variable
         resave: false,
-        saveUninitialized: false
+        saveUninitialized: false,
+        cookie: {
+            secure: false, // Set to true if using HTTPS in production
+            httpOnly: true, // Helps protect against XSS attacks
+            maxAge: 24 * 60 * 60 * 1000 // 1 day for session expiration
+        }
     })
 );
 
@@ -48,6 +59,13 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+// Content Security Policy to allow favicon loading
+app.use((req, res, next) => {
+    res.setHeader("Content-Security-Policy", "default-src 'self'; img-src 'self' http://localhost:3000");
+    next();
+});
+
 
 // Handling Invalid JSON
 app.use((err, req, res, next) => {

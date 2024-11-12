@@ -9,12 +9,11 @@ const router = express.Router();
 router.post(
     '/register',
     [
-        body('name').notEmpty().withMessage('Name is required'),
-        body('username').isAlphanumeric().withMessage('Username must be alphanumeric'),
-        body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+        body('title').notEmpty().withMessage('Title is required'),
+        body('firstName').notEmpty().withMessage('First name is required'),
+        body('lastName').notEmpty().withMessage('Last name is required'),
         body('email').isEmail().withMessage('Please enter a valid email address'),
-        body('phone_number').isMobilePhone().optional().withMessage('Invalid phone number'),
-        body('address').isString().optional().withMessage('Address must be a string')
+        body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
     ],
     userController.registerUser
 );
@@ -33,6 +32,47 @@ router.post('/login', (req, res, next) => {
     })(req, res, next);
 });
 
+// Logout route
+router.get('/logout', (req, res) => {
+    req.logout((err) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error logging out' });
+        }
+        req.session.destroy(() => {
+            res.clearCookie('connect.sid'); // Clear session cookie
+            res.status(200).json({ message: 'Logged out successfully' });
+        });
+    });
+});
+
+// Check authentication status
+router.get('/check-auth', (req, res) => {
+    res.json({ isAuthenticated: req.isAuthenticated() });
+});
+
+// Google login
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+// Google callback route
+router.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        console.log("Google callback route accessed.");
+        res.redirect('/'); // Redirect to the home page
+    }
+);
+
+// Facebook login
+router.get('/auth/facebook', passport.authenticate('facebook'));
+
+// Facebook callback route
+router.get('/auth/facebook/callback', 
+    passport.authenticate('facebook', { failureRedirect: '/login' }),
+    (req, res) => {
+        res.redirect('/'); // Redirect to home page after successful login
+    }
+);
+
 // Retrieve all users (for admin or internal use)
 router.get('/', userController.getAllUsers);
 
@@ -46,5 +86,3 @@ router.put('/:userId', userController.updateUser);
 router.delete('/:userId', userController.deleteUser);
 
 module.exports = router;
-
-

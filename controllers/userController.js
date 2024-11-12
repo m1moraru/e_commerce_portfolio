@@ -5,23 +5,22 @@ const db = require('../config/db');
 
 // Register a new user
 exports.registerUser = async (req, res) => {
-    // Validate request body
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, username, password, email, phone_number, address } = req.body;
+    const { title, firstName, lastName, email, password } = req.body;
 
     try {
-        // Check if the username or email already exists
+        // Check if the email already exists
         const existingUser = await db.query(
-            'SELECT * FROM users WHERE username = $1 OR email = $2',
-            [username, email]
+            'SELECT * FROM users WHERE email = $1',
+            [email]
         );
 
         if (existingUser.rows.length > 0) {
-            return res.status(400).json({ message: 'Username or email already exists' });
+            return res.status(400).json({ message: 'Email already exists' });
         }
 
         // Hash the password
@@ -29,9 +28,9 @@ exports.registerUser = async (req, res) => {
 
         // Insert the new user into the database
         const newUser = await db.query(
-            `INSERT INTO users (name, username, password, email, phone_number, address) 
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, username, email, phone_number, address`,
-            [name, username, hashedPassword, email, phone_number, address]
+            `INSERT INTO users (title, first_name, last_name, email, password) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING id, title, first_name AS "firstName", last_name AS "lastName", email`,
+            [title, firstName, lastName, email, hashedPassword]
         );
 
         res.status(201).json({

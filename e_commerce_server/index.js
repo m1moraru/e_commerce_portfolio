@@ -7,8 +7,6 @@ const dotenv = require('dotenv');
 // Initialize dotenv to access environment variables
 dotenv.config({ path: './e_commerce_server/.env' }); // Specify the path to the .env file
 
-console.log("Database:", process.env.DB_NAME); // Should print "E-CommerceAPI"
-
 // Initialize Express app
 const app = express();
 

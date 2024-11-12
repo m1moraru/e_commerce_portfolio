@@ -1,6 +1,7 @@
 // src/pages/SignUp.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function SignUp() {
     const [title, setTitle] = useState('');
@@ -9,23 +10,37 @@ function SignUp() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [consentToMarketing, setConsentToMarketing] = useState(false);
-    const [consentToProfiling, setConsentToProfiling] = useState(false);
     const navigate = useNavigate();
 
-    const handleSignUp = (e) => {
+    const handleSignUp = async (e) => {
         e.preventDefault();
+
         if (password !== confirmPassword) {
             alert('Passwords do not match');
             return;
         }
-        if (!consentToMarketing || !consentToProfiling) {
-            alert('You must agree to all terms and conditions.');
-            return;
+
+        try {
+            // API call to register the user
+            const response = await axios.post(
+                'http://localhost:3000/api/users/register',
+                {
+                    title,
+                    firstName,
+                    lastName,
+                    email,
+                    password
+                },
+                { withCredentials: true }
+            );
+
+            console.log('Successfully signed up:', response.data);
+            alert('Account created successfully!');
+            navigate('/login'); // Redirect to login after successful signup
+        } catch (error) {
+            console.error("Error signing up:", error.response?.data || error.message);
+            alert("There was an error signing up. Please try again.");
         }
-        // Add your signup logic here, possibly calling an API
-        console.log('Signing up with:', { title, firstName, lastName, email, password });
-        navigate('/login'); // Redirect to login after successful signup
     };
 
     return (
@@ -91,34 +106,6 @@ function SignUp() {
                         required
                     />
                 </div>
-
-                <div>
-                    <h3>Consent to Personal Data Processing</h3>
-                </div>
-
-                <div>
-                    <input
-                        type="checkbox"
-                        checked={consentToMarketing}
-                        onChange={(e) => setConsentToMarketing(e.target.checked)}
-                        required
-                    />
-                    <label>
-                        I agree to the collection and use of my personal data for marketing purposes.
-                    </label>
-                </div>
-                <div>
-                    <input
-                        type="checkbox"
-                        checked={consentToProfiling}
-                        onChange={(e) => setConsentToProfiling(e.target.checked)}
-                        required
-                    />
-                    <label>
-                        I agree to the collection, disclosure, or processing of my personal data for profiling purposes.
-                    </label>
-                </div>
-
                 <button type="submit">Sign Up</button>
             </form>
         </div>
@@ -126,4 +113,3 @@ function SignUp() {
 }
 
 export default SignUp;
-
