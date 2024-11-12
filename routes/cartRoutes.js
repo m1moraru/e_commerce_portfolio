@@ -9,7 +9,10 @@ const router = express.Router();
 router.post('/', cartController.createCart);
 
 // Add a product to an existing cart
-router.post('/:cartId', cartController.addProductToCart);
+router.post('/:cartId/add-item', cartController.addProductToCart);
+
+// Add a product to an existing cart
+//router.post('/:cartId', cartController.addProductToCart);
 
 // Retrieve the contents of a cart
 router.get('/:cartId', cartController.getCartContents);

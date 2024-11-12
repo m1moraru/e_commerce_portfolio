@@ -1,13 +1,17 @@
 // config/db.js
 const { Pool } = require('pg');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: './e_commerce_server/.env' }); // Specify the path to the .env file
 
 // Configure database connection settings
 const pool = new Pool({
-    user: 'mariusiulianmoraru',         // PostgreSQL username
-    host: 'localhost',             // PostgreSQL server host (usually localhost)
-    database: 'E-CommerceAPI',     // Database name
-    password: 'Annamaria16@',     // PostgreSQL user password
-    port: 5432                     // PostgreSQL port (default is 5432)
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+    options: '-c search_path=public', // Force use of public schema
 });
 
 // Check if the connection is successful
@@ -19,4 +23,7 @@ pool.connect((err) => {
     }
 });
 
-module.exports = pool;
+// Export the query method for executing queries
+module.exports = {
+    query: (text, params) => pool.query(text, params)
+};
